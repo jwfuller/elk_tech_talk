@@ -92,7 +92,7 @@
             <li class="fragment">Logs from CI server</li>
           </ul>
           <aside class="notes">
-            Apache logs are times 2 because of SSL.
+            Apache logs are times 2 because of SSL. This is 100% sustainable logging. I guarantee we can make more, as many as you want!
           </aside>
         </section>
 
@@ -205,7 +205,7 @@
             <li>Provides some resiliency if the indexer goes down.</li>
 
           </ul>
-          <div  class="fragment">
+          <div class="fragment">
             <p><a href="http://redis.io/">Redis</a> is commonly used as a broker.</p>
             <p>Beats now fufills this need to some degree.</p>
           </div>
@@ -232,30 +232,14 @@
             </li>
           </ul>
           <aside class="notes">
-            Now we get to the fun stuff!
-          </aside>
-        </section>
-
-        <section>
-          <h2>logstash</h2>
-          <ul>
-            <li>Parse and transform logs.</li>
-          </ul>
-          <aside class="notes">
-            This is 100% sustainable logging. I guarantee we can make more, as many as you want!
-            Also written in Java.
+            Now we get to the fun stuff! Also written in Java.
           </aside>
         </section>
 
         <section>
           <h2>Store and index</h2>
-          <ul class="fragment">
-            <li>Logstash creates indicies in Elasticsearch</li>
-            <li>Indicies are divided into Shards</li>
-            <li>Shards are replicated across Nodes</li>
-          </ul>
+          <h3>Elasticsearch</h3>
           <aside class="notes">
-            Elastic will create replicate shards on other nodes to increase data integrity. It also is smart enough to rebalance when a node goes down.
           </aside>
         </section>
 
@@ -264,9 +248,12 @@
           <ul>
             <li>Distributed, multitenant-capable full-text search engine built on <a href="https://lucene.apache.org/">Apache Lucene</a></li>
             <li>Provides a RESTful web interface and schema-free JSON documents</li>
+            <li class="fragment">Logstash creates indicies in Elasticsearch</li>
+            <li class="fragment">Indicies are divided into Shards</li>
+            <li class="fragment">Shards are replicated across Nodes</li>
           </ul>
           <aside class="notes">
-            Lucene also powers Solr, a common search solution for use with Drupal. Sorry to say that it is written in Java, so it's logs are nearly impossible to read.
+            Lucene also powers Solr, a common search solution for use with Drupal. Sorry to say that it is written in Java, so it's logs are nearly impossible to read. Elastic will create replicate shards on other nodes to increase data integrity. It also is smart enough to rebalance when a node goes down.
           </aside>
         </section>
 
