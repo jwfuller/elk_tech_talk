@@ -289,22 +289,22 @@
         <section>
           <h2>Input</h2>
           <pre><code style="max-height:525px;">
-            input {
-              beats {
-                port => 5044
-                ssl_certificate => "/usr/local/openssl/certs/crt/beat-selfsigned.crt"
-                ssl_key => "/usr/local/openssl/certs/key/beat.key"
-              }
-              file {
-                type => "mysql-slow"
-                path => "/var/log/mysql/mysql-slow.log"
-                codec => multiline {
-                  pattern => "^# User@Host:"
-                  negate => true
-                  what => previous
-                }
-              }
-            }
+input {
+  beats {
+    port => 5044
+    ssl_certificate => "/usr/local/openssl/certs/crt/beat-selfsigned.crt"
+    ssl_key => "/usr/local/openssl/certs/key/beat.key"
+  }
+  file {
+    type => "mysql-slow"
+    path => "/var/log/mysql/mysql-slow.log"
+    codec => multiline {
+      pattern => "^# User@Host:"
+      negate => true
+      what => previous
+    }
+  }
+}
           </code></pre>
           <aside class="notes">
             MySQl slow query log is a little funky, so a common parse pattern is to look from the beginning of the second record back in order to get a complete first record.
@@ -314,28 +314,28 @@
         <section>
           <h2>Filter - Varnish</h2>
           <pre><code>
-            filter {
-              if [type] == "varnishncsa" {
-                grok {
-                  match => { "message" => '%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:varnish_timestamp}\] \"%{WORD:verb} %{NOTSPACE:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response} %{NOTSPACE:bytes} %{QS:referrer} %{QS:agent} %{QS:varnish_response} %{QS:varnish_backend} %{QS:varnish_f5_destination}' }
-                }
-                mutate {
-                  convert => [ "bytes", "integer" ]
-                  add_field => { "signal" => "signal" }
-                }
-                if [bytes] == "-" {
-                  mutate {
-                    replace => { "bytes" => 0 }
-                  }
-                }
-                date {
-                  locale => "en"
-                  match =>["varnish_timestamp","dd/MMM/yyyy:HH:mm:ss Z"]
-                  target => ["@timestamp"]
-                  add_tag => [ "tmatch" ]
-                }
-              }
-            }
+filter {
+  if [type] == "varnishncsa" {
+    grok {
+      match => { "message" => '%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:varnish_timestamp}\] \"%{WORD:verb} %{NOTSPACE:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response} %{NOTSPACE:bytes} %{QS:referrer} %{QS:agent} %{QS:varnish_response} %{QS:varnish_backend} %{QS:varnish_f5_destination}' }
+    }
+    mutate {
+      convert => [ "bytes", "integer" ]
+      add_field => { "signal" => "signal" }
+    }
+    if [bytes] == "-" {
+      mutate {
+        replace => { "bytes" => 0 }
+      }
+    }
+    date {
+      locale => "en"
+      match =>["varnish_timestamp","dd/MMM/yyyy:HH:mm:ss Z"]
+      target => ["@timestamp"]
+      add_tag => [ "tmatch" ]
+    }
+  }
+}
           </code></pre>
           <aside class="notes">
           </aside>
@@ -508,99 +508,111 @@
         <h2>Questions?</h2>
       </section>
 
+      <!-- Start vertical 5 -->
       <section>
-        <h2>Elasticsearch</h2>
-      </section>
-      <section>
-        <code>curl 'localhost:9200/_cat/health?v'</code>
-        <pre><code class="fragment">
-          epoch      timestamp cluster       status node.total node.data shards pri relo init unassign
-          1394735289 14:28:09  elasticsearch yellow        1         1      5   5    0    0        5
-        </code></pre>
-      </section>
+        <section>
+          <h2>Elasticsearch API</h2>
+        </section>
+        <section>
+          <code>curl 'localhost:9200/_cat/health?v'</code>
+          <pre><code class="fragment">
+            epoch      timestamp cluster       status node.total node.data shards pri relo init unassign
+            1394735289 14:28:09  elasticsearch yellow        1         1      5   5    0    0        5
+          </code></pre>
+        </section>
 
-      <section>
-        <code>curl 'localhost:9200/_cat/indices?v'</code>
-        <pre><code class="fragment">
-          health status index    pri rep docs.count docs.deleted store.size pri.store.size
-          green  open   varnish    5   0      11434            0       64mb           32mb
-          green  open   access     5   0       2030            0      5.8mb          5.8mb
-          green  open   mysql      5   0       1054            0      8 8mb           45mb
-          green  open   drupal     5   0      12030            0       1.2G           1.2G
-        </code></pre>
-      </section>
+        <section>
+          <code>curl 'localhost:9200/_cat/indices?v'</code>
+          <pre><code class="fragment">
+            health status index    pri rep docs.count docs.deleted store.size pri.store.size
+            green  open   varnish    5   0      11434            0       64mb           32mb
+            green  open   access     5   0       2030            0      5.8mb          5.8mb
+            green  open   mysql      5   0       1054            0      8 8mb           45mb
+            green  open   drupal     5   0      12030            0       1.2G           1.2G
+          </code></pre>
+        </section>
 
-      <section>
-        <h2>Kibana</h2>
-      </section>
-      <section>
-        <img data-src="assets/kibana_default.png" alt="Default screen for Kibana" />
-      </section>
+        <section>
+          <h2>Additional Kibana Vizualizations</h2>
+        </section>
+        <section>
+          <img data-src="assets/kibana_default.png" alt="Default screen for Kibana" />
+        </section>
 
-      <section>
-        <img data-src="assets/kibana_viz_co.png" alt="Kibana vizualization creation screen" />
-      </section>
+        <section>
+          <img data-src="assets/kibana_viz_co.png" alt="Kibana vizualization creation screen" />
+        </section>
 
-      <section>
-        <img data-src="assets/kibana_viz_map.png" alt="Kibana map vizualization" />
-      </section>
+        <section>
+          <img data-src="assets/kibana_viz_map.png" alt="Kibana map vizualization" />
+        </section>
 
-      <section>
-        <img data-src="assets/kibana_dash_plus.png" alt="Kibana Dashboard of 4 indicies" />
-      </section>
+        <section>
+          <img data-src="assets/kibana_dash_plus.png" alt="Kibana Dashboard of 4 indicies" />
+        </section>
 
-      <section>
-        <img data-src="assets/platform_overview.png" alt="Kibana Dashboard of Web Express Overview" />
-      </section>
+        <section>
+          <img data-src="assets/platform_overview.png" alt="Kibana Dashboard of Web Express Overview" />
+        </section>
 
-      <section>
-        <img data-src="assets/platform_overview.png" alt="Kibana Dashboard of Web Express Overview" />
-      </section>
+        <section>
+          <img data-src="assets/platform_overview.png" alt="Kibana Dashboard of Web Express Overview" />
+        </section>
 
-      <section>
-        <h2>Filter - Drupal Syslog</h2>
-        <pre><code>
-          filter {
-            if [type] == "drupal_syslog" {
-              grok {
-                match => {
-                  "message" =>
-                  '%{SYSLOGBASE} %{URI:drupal_base_url}\|%{INT:drupal_unix_timestamp}\|%{DATA:drupal_category}\|%{IP:ip}\|%{URI:drupal_request_url}\|(?:%{URI:drupal_referrer}|)\|%{INT:drupal_uid}\|(?:%{URI:drupal_link}|)\|%{GREEDYDATA:drupal_message}' }
-                }
-                mutate {
-                  gsub => [ "drupal_category", "\s", "_"]
-                  add_field => { "signal" => "signal" }
-                }
-              }
-            </code></pre>
-            <aside class="notes">
-            </aside>
-          </section>
+        <section>
+          <h2>Filter - Drupal Syslog</h2>
+          <pre><code>
+filter {
+  if [type] == "drupal_syslog" {
+    grok {
+      match => {
+        "message" =>
+        '%{SYSLOGBASE} %{URI:drupal_base_url}\|%{INT:drupal_unix_timestamp}\|%{DATA:drupal_category}\|%{IP:ip}\|%{URI:drupal_request_url}\|(?:%{URI:drupal_referrer}|)\|%{INT:drupal_uid}\|(?:%{URI:drupal_link}|)\|%{GREEDYDATA:drupal_message}' }
+      }
+      mutate {
+        gsub => [ "drupal_category", "\s", "_"]
+        add_field => { "signal" => "signal" }
+      }
+    }
+              </code></pre>
+              <aside class="notes">
+              </aside>
+            </section>
 
-          <section>
-            <h2>Filter - MySQL Slow Queries</h2>
-            <pre><code>
-              filter {
-                if [type] == "mysql" {
-                  grok {
-                    match => [ "message", "^# User@Host: %{USER:user}(?:\[[^\]]+\])?\s+@\s+%{HOST:host}?\s+\[%{IP:ip}?\]" ]
-                  }
-                  grok {
-                    match => [ "message", "^# Query_time: %{NUMBER:duration:float}\s+Lock_time: %{NUMBER:lock_wait:float} Rows_sent: %{NUMBER:results:int} \s*Rows_examined: %{NUMBER:scanned:int}"]
-                  }
-                  grok {
-                    match => [ "message", "^SET timestamp=%{NUMBER:timestamp};" ]
-                  }
-                  date {
-                    match => [ "timestamp", "UNIX" ]
-                  }
-                }
-              }
-            </code></pre>
-            <aside class="notes">
-            </aside>
-          </section>
-
+            <section>
+              <h2>Filter - MySQL Slow Queries</h2>
+              <pre><code>
+filter {
+  if [type] == "mysql" {
+    grok {
+      match => [
+        "message",
+        "^# User@Host: %{USER:user}(?:\[[^\]]+\])?\s+@\s+%{HOST:host}?\s+\[%{IP:ip}?\]"
+      ]
+    }
+    grok {
+      match => [
+        "message",
+        "^# Query_time: %{NUMBER:duration:float}\s+Lock_time: %{NUMBER:lock_wait:float} Rows_sent: %{NUMBER:results:int} \s*Rows_examined: %{NUMBER:scanned:int}"
+      ]
+    }
+    grok {
+      match => [
+        "message",
+        "^SET timestamp=%{NUMBER:timestamp};"
+      ]
+    }
+    date {
+      match => [ "timestamp", "UNIX" ]
+    }
+  }
+}
+              </code></pre>
+              <aside class="notes">
+              </aside>
+            </section>
+        </section>
+        <!-- End vertical 5 -->
         </div>
 
       </div>
